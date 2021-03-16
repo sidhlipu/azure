@@ -1,22 +1,22 @@
 import os
 from time import sleep
-sourceRG = 'sentfastdb01eusprodentgroup'
-destRG = 'rg-fastdbstore-eastus-prod-02'
+sourceRG = 'sourceRG'
+destRG = 'destinationRG'
 snapName = 'ss_eusa_'
 osName=(os.popen('az vm list -g '+sourceRG+' --query "[].osProfile.computerName" -o tsv').read().strip()).split('\n')
 vmList=(os.popen('az vm list -g '+sourceRG+' --query "[].name" -o tsv').read().strip()).split('\n')
-map_dict = { 'datanode0':'idbeusadatap00',
-  'datanode1':'idbeusadatap01',
-  'datanode2':'idbeusadatap02',
-  'datanode3':'idbeusadatap03',
-  'datanode4':'idbeusadatap04',
-  'datanode5':'idbeusadatap05',
-  'datanode6':'idbeusadatap06',
-  'datanode7':'idbeusadatap07',
-  'datanode8':'idbeusadatap08',
-  'datanode9':'idbeusadatap09',
-  'datanode10':'idbeusadatap10',
-  'datanode11':'idbeusadatap11',
+map_dict = { 'node0':'idbeusadatap00',
+  'node1':'datap01',
+  'node2':'datap02',
+  'node3':'datap03',
+  'node4':'datap04',
+  'node5':'datap05',
+  'node6':'datap06',
+  'node7':'datap07',
+  'node8':'datap08',
+  'node9':'datap09',
+  'node10':'datap10',
+  'node11':'datap11',
  }
 
 bastvm = 'bast'
@@ -30,20 +30,20 @@ for x in vmList:
 for x in vmList:
     if metavm in x:
         vmList.remove(x)
-vmList.remove('metanode1')
+vmList.remove('node1')
 print vmList
 
-#for vmname in vmList:
-#		diskid=(os.popen('az vm show -g '+sourceRG+' -n '+vmname+' --query "storageProfile.dataDisks[*].managedDisk.id" -o tsv').read().strip()).split('\n')
-#		element = 'stage'
-#		for item in diskid:
-#    			if element in item:
-#        			diskid.remove(item)
-#		for disk in diskid:
-#			dname=disk.split('/')[-1]
-#			print "-----------------Creating SNAPSHOT for "+snapName+dname+"-------------------------"
-#			os.system('az snapshot create -g '+destRG+' --source '+disk+' --size-gb 1024 -l "East US" --name '+snapName+dname)
-# 			sleep(5)	
+for vmname in vmList:
+		diskid=(os.popen('az vm show -g '+sourceRG+' -n '+vmname+' --query "storageProfile.dataDisks[*].managedDisk.id" -o tsv').read().strip()).split('\n')
+		element = 'stage'
+		for item in diskid:
+    			if element in item:
+        			diskid.remove(item)
+		for disk in diskid:
+			dname=disk.split('/')[-1]
+			print "-----------------Creating SNAPSHOT for "+snapName+dname+"-------------------------"
+			os.system('az snapshot create -g '+destRG+' --source '+disk+' --size-gb 1024 -l "East US" --name '+snapName+dname)
+ 			sleep(5)	
 snapShots=os.popen('az snapshot list -g '+destRG+' --query "[].id" -o tsv').read().strip().split('\n')
 for i in snapShots:
 	src_host=(i.split('/')[-1]).split('_')[2]
